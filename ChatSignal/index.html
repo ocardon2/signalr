@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@10.0.0/dist/browser/signalr.min.js"></script>
+
+    <script>
+        window.onload = () => {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("http://localhost:5172/chat")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("RecieveMessage", (user, message) => {
+                const divMsj = document.querySelector("#messages");
+                const newMsj = document.createElement("div");
+                newMsj.textContent = `${user} => ${message}`;
+                divMsj.appendChild(newMsj);
+            });
+
+            connection.start()
+                .catch(err => console.log(err));
+
+            const btn = document.querySelector("#sendButton");
+            btn.addEventListener("click", async () => {
+                const msj = document.querySelector("#messageInput");
+                await connection.invoke("FromClient", "Usuariox", msj.value);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Chat signalr</h1>
+        <div id="messages" class="border p-3 mb-3" style="height: 200px; overflow-y: auto;"></div>
+
+        <div class="input-group">
+            <input type="text" id="messageInput" class="form-control">
+            <button class="btn btn-success" id="sendButton">Enviar</button>
+        </div>
+    </div>
+</body>
+
+</html>
